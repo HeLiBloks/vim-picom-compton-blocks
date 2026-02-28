@@ -11,6 +11,7 @@ tests/test_completion_values.vim
 tests/test_compiler.vim
 tests/test_features.vim
 tests/test_filetype_paths.vim
+tests/test_include.vim
 "
 
 run_test() {

@@ -102,6 +102,35 @@ function! s:line_delta(line) abort
     return l:opens - l:closes
 endfunction
 
+function! picom_compton_blocks#IncludeExpr(fname) abort
+    let l:name = trim(a:fname)
+    if !empty(l:name) && (l:name[0] ==# '"' || l:name[0] ==# "'")
+        let l:name = l:name[1:]
+    endif
+    let l:name = trim(l:name)
+    if !empty(l:name) && l:name[-1:] ==# ';'
+        let l:name = trim(l:name[:-2])
+    endif
+    if !empty(l:name) && (l:name[-1:] ==# '"' || l:name[-1:] ==# "'")
+        let l:name = l:name[:-2]
+    endif
+    let l:name = expand(l:name)
+
+    if stridx(l:name, '/') == 0 || stridx(l:name, '~') == 0 || (strlen(l:name) > 1 && l:name[1] ==# ':')
+        return l:name
+    endif
+
+    let l:buf_dir = expand('%:p:h')
+    if !empty(l:buf_dir)
+        let l:local_path = fnamemodify(l:buf_dir . '/' . l:name, ':p')
+        if filereadable(l:local_path)
+            return l:local_path
+        endif
+    endif
+
+    return l:name
+endfunction
+
 function! s:is_in_block(name) abort
     let l:depth = 0
     let l:in_block = 0
