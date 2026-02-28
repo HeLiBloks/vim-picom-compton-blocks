@@ -10,7 +10,10 @@ CONTENTS                                                *vim-picom-compton-block
 2. Features...............................................|vpcb-features|
 3. Filetype Detection.....................................|vpcb-filetype|
 4. Omni Completion........................................|vpcb-omnifunc|
-5. Notes..................................................|vpcb-notes|
+5. Commands...............................................|vpcb-commands|
+6. Motions / Text Objects.................................|vpcb-motions|
+7. Compiler...............................................|vpcb-compiler|
+8. Notes..................................................|vpcb-notes|
 
 ===============================================================================
 1. Overview                                                    *vpcb-overview*
@@ -40,6 +43,9 @@ Detected as `compton` for:
 - compton.conf
 - picom
 - picom.conf
+- *.compton.conf
+- *.picom.conf
+- common XDG paths like ~/.config/picom/picom.conf
 
 ===============================================================================
 4. Omni Completion                                             *vpcb-omnifunc*
@@ -57,7 +63,52 @@ Compatibility alias:
     compton#Complete()
 
 ===============================================================================
-5. Notes                                                         *vpcb-notes*
+5. Commands                                                   *vpcb-commands*
+
+Buffer-local commands:
+
+    :PicomCheck
+    :PicomLint
+    :PicomFormat
+    :PicomInsertRulesBlock
+    :PicomInsertWintypesBlock
+
+- PicomCheck runs compiler diagnostics and lint, then opens quickfix.
+- PicomLint checks duplicate/unknown top-level keys.
+- PicomFormat applies basic indentation/spacing formatting.
+- Insert commands add starter rules/wintypes blocks.
+
+===============================================================================
+6. Motions / Text Objects                                    *vpcb-motions*
+
+Buffer-local mappings:
+
+    ]r   next rule entry (match = ...)
+    [r   previous rule entry
+    ar   around current rule object
+    ir   inside current rule object
+
+===============================================================================
+7. Compiler                                                   *vpcb-compiler*
+
+Use the included compiler with |:make|:
+
+    :compiler compton
+    :make
+
+Alias:
+
+    :compiler picom
+
+It runs diagnostics for the current buffer file using:
+
+- picom --config %:p --diagnostics (preferred)
+- compton --config %:p --diagnostics (fallback)
+
+Errors are parsed into quickfix when possible.
+
+===============================================================================
+8. Notes                                                         *vpcb-notes*
 
 The keyword/value lists are based on current picom source code in:
 

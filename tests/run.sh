@@ -10,6 +10,9 @@ run_with() {
     "$cmd" -Nu NONE -n -es -S tests/test_omnifunc.vim
     "$cmd" -Nu NONE -n -es -S tests/test_syntax.vim
     "$cmd" -Nu NONE -n -es -S tests/test_completion_values.vim
+    "$cmd" -Nu NONE -n -es -S tests/test_compiler.vim
+    "$cmd" -Nu NONE -n -es -S tests/test_features.vim
+    "$cmd" -Nu NONE -n -es -S tests/test_filetype_paths.vim
     return 0
   fi
   return 1

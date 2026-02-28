@@ -1,7 +1,6 @@
 set nocompatible
 set rtp^=.
 filetype plugin on
-syntax on
 
 execute 'edit ' . fnameescape('tests/picom.conf')
 
@@ -9,17 +8,21 @@ if &l:filetype !=# 'compton'
   cquit 1
 endif
 
-if search('^\s*backend\s*=', 'n') == 0
+compiler compton
+
+if &l:makeprg !~# '--config'
   cquit 1
 endif
 
-let out = execute('syntax list picomTopKey')
-if out !~# 'backend'
+if &l:makeprg !~# '%:p'
   cquit 1
 endif
 
-let out2 = execute('syntax list picomRuleKey')
-if out2 !~# 'match'
+if &l:makeprg !~# 'picom\|compton'
+  cquit 1
+endif
+
+if empty(&l:errorformat)
   cquit 1
 endif
 

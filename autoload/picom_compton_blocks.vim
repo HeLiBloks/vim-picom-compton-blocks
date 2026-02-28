@@ -35,6 +35,16 @@ let s:rule_keys = [
     \ 'blur-background', 'clip-shadow-above', 'transparent-clipping',
 \ ]
 
+let s:wintype_names = [
+    \ 'tooltip', 'dock', 'dnd', 'popup_menu', 'dropdown_menu',
+    \ 'menu', 'utility', 'dialog', 'normal', 'desktop',
+\ ]
+
+let s:wintype_keys = [
+    \ 'fade', 'shadow', 'opacity', 'focus', 'full-shadow',
+    \ 'clip-shadow-above', 'redir-ignore',
+\ ]
+
 let s:value_map = {
     \ 'backend': ['xrender', 'glx', 'egl'],
     \ 'blur-method': ['none', 'gaussian', 'box', 'kernel', 'dual_kawase'],
@@ -56,6 +66,7 @@ let s:booleanish_keys = {
     \ 'unredir-if-possible': 1, 'use-damage': 1, 'use-ewmh-active-win': 1,
     \ 'vsync': 1, 'fade': 1, 'paint': 1, 'full-shadow': 1,
     \ 'invert-color': 1, 'blur-background': 1, 'clip-shadow-above': 1,
+    \ 'focus': 1, 'redir-ignore': 1,
 \ }
 
 let s:bool_values = ['true', 'false']
@@ -80,6 +91,38 @@ function! s:looks_like_key_context(prefix) abort
     return a:prefix =~# '^\s*$' || a:prefix =~# '[{(,;]\s*$'
 endfunction
 
+function! s:strip_comment(line) abort
+    return substitute(a:line, '#.*$', '', '')
+endfunction
+
+function! s:line_delta(line) abort
+    let l:text = s:strip_comment(a:line)
+    let l:opens = strlen(substitute(l:text, '[^({]', '', 'g'))
+    let l:closes = strlen(substitute(l:text, '[^)}]', '', 'g'))
+    return l:opens - l:closes
+endfunction
+
+function! s:is_in_block(name) abort
+    let l:depth = 0
+    let l:in_block = 0
+    let l:start_pat = '\<' . a:name . '\s*[=:]\s*[({]'
+
+    for lnum in range(1, line('.'))
+        let l:text = s:strip_comment(getline(lnum))
+        if !l:in_block && l:text =~# l:start_pat
+            let l:in_block = 1
+        endif
+
+        let l:depth += s:line_delta(l:text)
+        if l:in_block && l:depth <= 0
+            let l:in_block = 0
+            let l:depth = 0
+        endif
+    endfor
+
+    return l:in_block
+endfunction
+
 function! picom_compton_blocks#Complete(findstart, base) abort
     let l:line = getline('.')
 
@@ -93,6 +136,12 @@ function! picom_compton_blocks#Complete(findstart, base) abort
 
     let l:prefix = strpart(l:line, 0, col('.') - 1)
     let l:key = s:current_key(l:line)
+    let l:context = 'top'
+    if s:is_in_block('rules')
+        let l:context = 'rules'
+    elseif s:is_in_block('wintypes')
+        let l:context = 'wintypes'
+    endif
 
     if l:prefix =~# '[=:]'
         if has_key(s:value_map, l:key)
@@ -104,12 +153,178 @@ function! picom_compton_blocks#Complete(findstart, base) abort
     endif
 
     if s:looks_like_key_context(l:prefix)
-        let l:is_rules_block = l:prefix =~# '\<rules\s*[=:]\s*('
-        if l:is_rules_block
+        if l:context ==# 'rules'
             return s:to_items(s:filter_words(s:rule_keys, a:base), 'k', 'rule')
+        endif
+        if l:context ==# 'wintypes'
+            if l:prefix =~# '^\s*$' || l:prefix =~# '[{,]\s*$'
+                if indent('.') <= 2
+                    return s:to_items(s:filter_words(s:wintype_names, a:base), 'w', 'wintype')
+                endif
+                return s:to_items(s:filter_words(s:wintype_keys, a:base), 'k', 'wintype-key')
+            endif
+            return s:to_items(s:filter_words(s:wintype_keys, a:base), 'k', 'wintype-key')
         endif
         return s:to_items(s:filter_words(s:all_keys, a:base), 'k', 'top')
     endif
 
-    return s:to_items(s:filter_words(uniq(sort(copy(s:all_keys + s:rule_keys))), a:base), 'k', 'all')
+    return s:to_items(s:filter_words(uniq(sort(copy(s:all_keys + s:rule_keys + s:wintype_keys))), a:base), 'k', 'all')
+endfunction
+
+function! picom_compton_blocks#CollectLint() abort
+    let l:seen = {}
+    let l:qf = []
+    let l:depth = 0
+    let l:known = {}
+
+    for l:key in s:all_keys
+        let l:known[l:key] = 1
+    endfor
+
+    for lnum in range(1, line('$'))
+        let l:text = s:strip_comment(getline(lnum))
+        let l:key = matchstr(l:text, '^\s*\zs[A-Za-z_][A-Za-z0-9_-]*\ze\s*[=:]')
+
+        if l:depth == 0 && !empty(l:key)
+            if has_key(l:seen, l:key)
+                call add(l:qf, {
+                    \ 'bufnr': bufnr('%'),
+                    \ 'lnum': lnum,
+                    \ 'col': 1,
+                    \ 'type': 'W',
+                    \ 'text': 'Duplicate top-level key "' . l:key . '" (first seen at line ' . l:seen[l:key] . ')',
+                \ })
+            else
+                let l:seen[l:key] = lnum
+            endif
+
+            if !has_key(l:known, l:key)
+                call add(l:qf, {
+                    \ 'bufnr': bufnr('%'),
+                    \ 'lnum': lnum,
+                    \ 'col': 1,
+                    \ 'type': 'W',
+                    \ 'text': 'Unknown top-level key "' . l:key . '"',
+                \ })
+            endif
+        endif
+
+        let l:depth += s:line_delta(l:text)
+        if l:depth < 0
+            let l:depth = 0
+        endif
+    endfor
+
+    return l:qf
+endfunction
+
+function! picom_compton_blocks#LintBuffer() abort
+    let l:qf = picom_compton_blocks#CollectLint()
+    call setqflist(l:qf, 'r')
+    if empty(l:qf)
+        cclose
+    else
+        cwindow
+    endif
+    return len(l:qf)
+endfunction
+
+function! picom_compton_blocks#Check() abort
+    compiler compton
+    silent! make!
+    let l:qf = getqflist()
+    let l:lint = picom_compton_blocks#CollectLint()
+    if !empty(l:lint)
+        let l:qf = l:qf + l:lint
+    endif
+    call setqflist(l:qf, 'r')
+    if empty(l:qf)
+        cclose
+    else
+        cwindow
+    endif
+endfunction
+
+function! picom_compton_blocks#InsertRulesBlock() abort
+    call append(line('.'), [
+        \ 'rules: ({',
+        \ '  match = "";',
+        \ '  shadow = false;',
+        \ '});',
+    \ ])
+endfunction
+
+function! picom_compton_blocks#InsertWintypesBlock() abort
+    call append(line('.'), [
+        \ 'wintypes: {',
+        \ '  tooltip = { fade = true; shadow = false; };',
+        \ '  dock = { shadow = false; };',
+        \ '};',
+    \ ])
+endfunction
+
+function! picom_compton_blocks#NextRule() abort
+    call search('^\s*match\s*=', 'W')
+endfunction
+
+function! picom_compton_blocks#PrevRule() abort
+    call search('^\s*match\s*=', 'bW')
+endfunction
+
+function! picom_compton_blocks#SelectRuleObject(kind) abort
+    if !s:is_in_block('rules')
+        return
+    endif
+
+    let l:start = searchpairpos('{', '', '}', 'bnW')
+    let l:end = searchpairpos('{', '', '}', 'nW')
+    if l:start[0] == 0 || l:end[0] == 0
+        return
+    endif
+
+    if a:kind ==# 'inner'
+        let l:sline = l:start[0] + 1
+        let l:eline = l:end[0] - 1
+    else
+        let l:sline = l:start[0]
+        let l:eline = l:end[0]
+    endif
+
+    if l:sline <= 0 || l:eline <= 0 || l:sline > l:eline
+        return
+    endif
+
+    call cursor(l:sline, 1)
+    normal! v
+    call cursor(l:eline, strlen(getline(l:eline)) + 1)
+endfunction
+
+function! picom_compton_blocks#Format() abort
+    let l:sw = &l:shiftwidth > 0 ? &l:shiftwidth : 2
+    let l:depth = 0
+
+    for lnum in range(1, line('$'))
+        let l:line = substitute(getline(lnum), '\s\+$', '', '')
+        let l:text = substitute(l:line, '^\s*', '', '')
+        let l:indent_depth = l:depth
+        if l:text =~# '^[)}]'
+            let l:indent_depth -= 1
+        endif
+        if l:indent_depth < 0
+            let l:indent_depth = 0
+        endif
+
+        if l:text !~# '^#' && !empty(l:text)
+            let l:text = substitute(l:text, '^\([A-Za-z_][A-Za-z0-9_-]*\)\s*=\s*', '\1 = ', '')
+            let l:text = substitute(l:text, '^\([A-Za-z_][A-Za-z0-9_-]*\)\s*:\s*', '\1: ', '')
+            call setline(lnum, repeat(' ', l:sw * l:indent_depth) . l:text)
+        else
+            call setline(lnum, repeat(' ', l:sw * l:indent_depth) . l:text)
+        endif
+
+        let l:depth += s:line_delta(l:text)
+        if l:depth < 0
+            let l:depth = 0
+        endif
+    endfor
 endfunction

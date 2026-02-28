@@ -66,6 +66,9 @@ For Neovim, use `~/.config/nvim/pack/plugins/start` instead of `~/.vim/pack/plug
 - `compton.conf`
 - `picom`
 - `picom.conf`
+- `*.compton.conf`
+- `*.picom.conf`
+- common XDG paths like `~/.config/picom/picom.conf`
 
 ## Completion
 
@@ -77,6 +80,37 @@ Use in insert mode:
 
 - `<C-x><C-o>`
 
+## Syntax checking with `:make`
+
+This plugin includes a Vim compiler for picom/compton config diagnostics.
+
+```vim
+:compiler compton
+:make
+```
+
+(`:compiler picom` also works.)
+
+It runs:
+
+- `picom --config %:p --diagnostics` (preferred)
+- `compton --config %:p --diagnostics` (fallback)
+
+Errors are collected in the quickfix list.
+
+## Commands
+
+- `:PicomCheck` runs compiler diagnostics and lint checks, then opens quickfix.
+- `:PicomLint` checks for duplicate/unknown top-level keys.
+- `:PicomFormat` applies basic whitespace/indent/assignment formatting.
+- `:PicomInsertRulesBlock` inserts a starter `rules` block.
+- `:PicomInsertWintypesBlock` inserts a starter `wintypes` block.
+
+## Motions and Text Objects
+
+- `]r` / `[r` jump to next/previous rule (`match = ...`) entry.
+- `ar` / `ir` select around/inside the current rule object block.
+
 ## Help
 
 After install, generate tags and open help:
@@ -85,6 +119,34 @@ After install, generate tags and open help:
 :helptags ~/.vim/dev/vim-picom-compton-blocks/doc
 :help vim-picom-compton-blocks
 ```
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repo and create a feature branch.
+2. Make focused changes with tests when applicable.
+3. Run the local test scripts before opening a PR:
+
+```sh
+# Neovim
+nvim -Nu NONE -n -es -S tests/test_omnifunc.vim
+nvim -Nu NONE -n -es -S tests/test_syntax.vim
+nvim -Nu NONE -n -es -S tests/test_completion_values.vim
+nvim -Nu NONE -n -es -S tests/test_compiler.vim
+nvim -Nu NONE -n -es -S tests/test_features.vim
+nvim -Nu NONE -n -es -S tests/test_filetype_paths.vim
+
+# Vim
+vim -Nu NONE -n -es -S tests/test_omnifunc.vim
+vim -Nu NONE -n -es -S tests/test_syntax.vim
+vim -Nu NONE -n -es -S tests/test_completion_values.vim
+vim -Nu NONE -n -es -S tests/test_compiler.vim
+vim -Nu NONE -n -es -S tests/test_features.vim
+vim -Nu NONE -n -es -S tests/test_filetype_paths.vim
+```
+
+Please include a clear PR description and update docs/help text if behavior changes.
 
 ## License
 
