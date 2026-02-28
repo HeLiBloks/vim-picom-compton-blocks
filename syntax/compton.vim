@@ -24,7 +24,7 @@ syn match picomDelimiter /[{}\[\](),;]/
 syn match picomAssign /[:=]/
 syn match picomLogic /&&\|||\|!/
 syn match picomCmp /!\?\(<=\|>=\|=\|<\|>\)/
-syn match picomMatch /!\?\(\*\?=\|\^\?=\|%\?=\|\~\?=\|\?=\)/
+syn match picomMatch /!\?\(\*[?]\?=\|\^[?]\?=\|%[?]\?=\|\~[?]\?=\|[?]=\)/
 
 syn keyword picomBoolean true false yes no
 syn keyword picomUnredirValue default preferred passive forced terminate when-possible when-possible-else-terminate
