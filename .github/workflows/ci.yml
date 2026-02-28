@@ -24,18 +24,4 @@ jobs:
           fi
       - name: Run tests
         run: |
-          if [ "${{ matrix.editor }}" = "nvim" ]; then
-            nvim -Nu NONE -n -es -S tests/test_omnifunc.vim
-            nvim -Nu NONE -n -es -S tests/test_syntax.vim
-            nvim -Nu NONE -n -es -S tests/test_completion_values.vim
-            nvim -Nu NONE -n -es -S tests/test_compiler.vim
-            nvim -Nu NONE -n -es -S tests/test_features.vim
-            nvim -Nu NONE -n -es -S tests/test_filetype_paths.vim
-          else
-            vim -Nu NONE -n -es -S tests/test_omnifunc.vim
-            vim -Nu NONE -n -es -S tests/test_syntax.vim
-            vim -Nu NONE -n -es -S tests/test_completion_values.vim
-            vim -Nu NONE -n -es -S tests/test_compiler.vim
-            vim -Nu NONE -n -es -S tests/test_features.vim
-            vim -Nu NONE -n -es -S tests/test_filetype_paths.vim
-          fi
+          ./tests/run.sh "${{ matrix.editor }}"
