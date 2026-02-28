@@ -1,0 +1,72 @@
+*vim-picom-compton-blocks.txt*  Syntax and omni completion for picom/compton
+
+Author: HeLi + contributors
+License: MIT
+
+===============================================================================
+CONTENTS                                                *vim-picom-compton-blocks*
+
+1. Overview...............................................|vpcb-overview|
+2. Features...............................................|vpcb-features|
+3. Filetype Detection.....................................|vpcb-filetype|
+4. Omni Completion........................................|vpcb-omnifunc|
+5. Notes..................................................|vpcb-notes|
+
+===============================================================================
+1. Overview                                                    *vpcb-overview*
+
+vim-picom-compton-blocks provides syntax highlighting and omni completion for
+picom/compton config files using libconfig-style syntax.
+
+===============================================================================
+2. Features                                                    *vpcb-features*
+
+- Highlights top-level options (from picom options parser).
+- Highlights window rule keys and common condition tokens.
+- Highlights condition operators: &&, ||, !, =, !=, *=, *?=, ^=, ^?=, %=, %?=,
+  ~=, ~?=.
+- Provides omnifunc completions for:
+  - top-level keys
+  - rule keys
+  - enum values for keys like backend, blur-method, log-level, unredir
+  - boolean values for boolean-like options
+
+===============================================================================
+3. Filetype Detection                                          *vpcb-filetype*
+
+Detected as `compton` for:
+
+- compton
+- compton.conf
+- picom
+- picom.conf
+
+===============================================================================
+4. Omni Completion                                             *vpcb-omnifunc*
+
+The plugin sets:
+
+    setlocal omnifunc=picom_compton_blocks#Complete
+
+Use in Insert mode:
+
+    <C-x><C-o>
+
+Compatibility alias:
+
+    compton#Complete()
+
+===============================================================================
+5. Notes                                                         *vpcb-notes*
+
+The keyword/value lists are based on current picom source code in:
+
+- src/options.c
+- src/config_libconfig.c
+
+For local docs:
+
+    :helptags ~/.vim/dev/vim-picom-compton-blocks/doc
+    :help vim-picom-compton-blocks
+
+vim:tw=78:ts=8:ft=help:norl:
