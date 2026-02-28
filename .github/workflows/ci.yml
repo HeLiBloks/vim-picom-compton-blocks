@@ -3,13 +3,33 @@ name: ci
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
+    strategy:
+      fail-fast: false
+      matrix:
+        editor: [vim, nvim]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Neovim
-        run: sudo apt-get update && sudo apt-get install -y neovim
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          if [ "${{ matrix.editor }}" = "nvim" ]; then
+            sudo apt-get install -y neovim
+          else
+            sudo apt-get install -y vim
+          fi
       - name: Run tests
-        run: ./tests/run.sh
+        run: |
+          if [ "${{ matrix.editor }}" = "nvim" ]; then
+            nvim -Nu NONE -n -es -S tests/test_omnifunc.vim
+            nvim -Nu NONE -n -es -S tests/test_syntax.vim
+            nvim -Nu NONE -n -es -S tests/test_completion_values.vim
+          else
+            vim -Nu NONE -n -es -S tests/test_omnifunc.vim
+            vim -Nu NONE -n -es -S tests/test_syntax.vim
+            vim -Nu NONE -n -es -S tests/test_completion_values.vim
+          fi
