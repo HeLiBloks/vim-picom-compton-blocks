@@ -76,7 +76,7 @@ if index(lint_texts, 'Unknown top-level key "totally-unknown-key"') < 0
 endif
 
 " formatting helper
-enew
+enew!
 set filetype=compton
 call setline(1, ['shadow=true;', ' rules:({', '{', 'match = "x";', '}', ');'])
 PicomFormat
@@ -88,7 +88,7 @@ if getline(2) !=# 'rules: ({'
 endif
 
 " snippet commands
-enew
+enew!
 set filetype=compton
 call setline(1, '# test')
 call cursor(1, 1)
