@@ -1,5 +1,8 @@
 # vim-picom-compton-blocks
 
+[![CI](https://github.com/HeLiBloks/vim-picom-compton-blocks/actions/workflows/ci.yml/badge.svg)](https://github.com/HeLiBloks/vim-picom-compton-blocks/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 Vim/Neovim plugin for editing `picom`/`compton` config files with:
 
 - `compton` filetype detection
@@ -8,7 +11,7 @@ Vim/Neovim plugin for editing `picom`/`compton` config files with:
 
 ## Install
 
-### lazy.nvim local plugin
+### lazy.nvim (Neovim)
 
 ```lua
 {
@@ -17,6 +20,45 @@ Vim/Neovim plugin for editing `picom`/`compton` config files with:
   lazy = false,
 }
 ```
+
+### vim-plug (Vim/Neovim)
+
+```vim
+" init.vim / .vimrc
+call plug#begin('~/.vim/plugged')
+Plug 'HeLiBloks/vim-picom-compton-blocks'
+call plug#end()
+```
+
+Then run:
+
+```vim
+:PlugInstall
+```
+
+### packer.nvim (Neovim)
+
+```lua
+use({
+  "HeLiBloks/vim-picom-compton-blocks",
+})
+```
+
+Then run:
+
+```vim
+:PackerSync
+```
+
+### Native packages (`pack/*/start`) (Vim 8+/Neovim)
+
+```sh
+mkdir -p ~/.vim/pack/plugins/start
+git clone https://github.com/HeLiBloks/vim-picom-compton-blocks \
+  ~/.vim/pack/plugins/start/vim-picom-compton-blocks
+```
+
+For Neovim, use `~/.config/nvim/pack/plugins/start` instead of `~/.vim/pack/plugins/start`.
 
 ### Filetypes covered
 
