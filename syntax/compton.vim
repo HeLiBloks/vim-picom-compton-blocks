@@ -36,7 +36,7 @@ syn match picomHexColor /#\x\{6\}\>/
 syn keyword picomTopKey active-opacity animations backend benchmark benchmark-wid blur
 syn keyword picomTopKey blur-background blur-background-exclude blur-background-fixed blur-background-frame
 syn keyword picomTopKey blur-deviation blur-kern blur-method blur-size blur-strength
-syn keyword picomTopKey clip-shadow-above corner-radius corner-radius-rules crop-shadow-to-monitor dbus
+syn keyword picomTopKey clip-shadow-above corner-radius corner-radius-rules crop-shadow-to-monitor daemon dbus
 syn keyword picomTopKey detect-client-leader detect-client-opacity detect-rounded-corners detect-transient
 syn keyword picomTopKey dithered-present fade-delta fade-exclude fade-in-step fade-out-step fading
 syn keyword picomTopKey focus-exclude force-win-blend frame-opacity inactive-dim inactive-dim-fixed
@@ -55,7 +55,7 @@ syn keyword picomRuleKey clip-shadow-above transparent-clipping opacity blur-opa
 syn keyword picomRuleKey shadow-color unredir shader path defines animations triggers suppressions
 syn keyword picomRuleKey preset direction duration delay
 
-syn keyword picomBackend xrender glx
+syn keyword picomBackend xrender glx egl
 syn keyword picomBlurMethod none gaussian box kernel dual_kawase
 syn keyword picomLogLevel trace debug info warn error TRACE DEBUG INFO WARN ERROR
 syn keyword picomWinType unknown desktop dock toolbar menu utility splash dialog normal

@@ -8,7 +8,7 @@ let s:all_keys = [
     \ 'blur', 'blur-background', 'blur-background-exclude', 'blur-background-fixed',
     \ 'blur-background-frame', 'blur-deviation', 'blur-kern', 'blur-method',
     \ 'blur-size', 'blur-strength', 'clip-shadow-above', 'corner-radius',
-    \ 'corner-radius-rules', 'crop-shadow-to-monitor', 'dbus',
+    \ 'corner-radius-rules', 'crop-shadow-to-monitor', 'daemon', 'dbus',
     \ 'detect-client-leader', 'detect-client-opacity', 'detect-rounded-corners',
     \ 'detect-transient', 'dithered-present', 'fade-delta', 'fade-exclude',
     \ 'fade-in-step', 'fade-out-step', 'fading', 'focus-exclude',
@@ -36,7 +36,7 @@ let s:rule_keys = [
 \ ]
 
 let s:value_map = {
-    \ 'backend': ['xrender', 'glx'],
+    \ 'backend': ['xrender', 'glx', 'egl'],
     \ 'blur-method': ['none', 'gaussian', 'box', 'kernel', 'dual_kawase'],
     \ 'log-level': ['trace', 'debug', 'info', 'warn', 'error', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'],
     \ 'unredir': ['true', 'false', 'yes', 'no', 'default', 'preferred', 'passive', 'forced', 'when-possible', 'when-possible-else-terminate', 'terminate'],
@@ -73,7 +73,7 @@ function! s:to_items(words, kind, menu) abort
 endfunction
 
 function! s:current_key(line) abort
-    return matchstr(a:line, '^\s*\zs[a-zA-Z_][a-zA-Z0-9_-]*\ze\s*=')
+    return matchstr(a:line, '^\s*\zs[a-zA-Z_][a-zA-Z0-9_-]*\ze\s*[=:]')
 endfunction
 
 function! s:looks_like_key_context(prefix) abort
@@ -94,7 +94,7 @@ function! picom_compton_blocks#Complete(findstart, base) abort
     let l:prefix = strpart(l:line, 0, col('.') - 1)
     let l:key = s:current_key(l:line)
 
-    if l:prefix =~# '='
+    if l:prefix =~# '[=:]'
         if has_key(s:value_map, l:key)
             return s:to_items(s:filter_words(s:value_map[l:key], a:base), 'v', l:key)
         endif
@@ -104,15 +104,12 @@ function! picom_compton_blocks#Complete(findstart, base) abort
     endif
 
     if s:looks_like_key_context(l:prefix)
-        let l:is_rules_block = l:prefix =~# '\<rules\s*=\s*('\n        if l:is_rules_block
+        let l:is_rules_block = l:prefix =~# '\<rules\s*[=:]\s*('
+        if l:is_rules_block
             return s:to_items(s:filter_words(s:rule_keys, a:base), 'k', 'rule')
         endif
         return s:to_items(s:filter_words(s:all_keys, a:base), 'k', 'top')
     endif
 
     return s:to_items(s:filter_words(uniq(sort(copy(s:all_keys + s:rule_keys))), a:base), 'k', 'all')
-endfunction
-
-function! compton#Complete(findstart, base) abort
-    return picom_compton_blocks#Complete(a:findstart, a:base)
 endfunction
