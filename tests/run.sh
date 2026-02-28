@@ -9,6 +9,7 @@ run_with() {
   if command -v "$cmd" >/dev/null 2>&1; then
     "$cmd" -Nu NONE -n -es -S tests/test_omnifunc.vim
     "$cmd" -Nu NONE -n -es -S tests/test_syntax.vim
+    "$cmd" -Nu NONE -n -es -S tests/test_completion_values.vim
     return 0
   fi
   return 1
